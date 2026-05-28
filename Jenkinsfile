@@ -1,122 +1,49 @@
 pipeline {
-
     agent any
-
     environment {
-
-        IMAGE_NAME = "taibaton/nnfs_webgame"
-
+        // Cấu hình duy nhất 1 lần
+        ECR_REGISTRY = "123456789012.dkr.ecr.ap-southeast-1.amazonaws.com"
+        IMAGE_NAME = "nnfs_webgame"
+        FULL_IMAGE = "${ECR_REGISTRY}/${IMAGE_NAME}"
     }
-
     stages {
-
         stage('Build Docker Image') {
-
             steps {
-
                 script {
-
                     echo "Building Docker image..."
-
-                    sh """
-                    docker build \
-                    -t ${IMAGE_NAME}:${BUILD_ID} \
-                    -t ${IMAGE_NAME}:latest .
-                    """
-
+                    // Build trực tiếp với tag ECR
+                    sh "docker build -t ${FULL_IMAGE}:${BUILD_ID} -t ${FULL_IMAGE}:latest ."
                 }
-
             }
-
-        }
-        
-        stage('Push Docker Image') {
-
-            steps {
-
-                script {
-
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'docker',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
-                        )
-                    ]) {
-
-                        echo "Login Docker Hub..."
-
-                        sh """
-                        echo \$DOCKER_PASS | docker login \
-                        -u \$DOCKER_USER \
-                        --password-stdin
-                        """
-
-                        echo "Push Docker images..."
-
-                        sh """
-                        docker push ${IMAGE_NAME}:${BUILD_ID}
-                        docker push ${IMAGE_NAME}:latest
-                        """
-
-                    }
-
-                }
-
-            }
-
         }
         stage('Push to ECR') {
-            environment {
-                // Thay bằng URL ECR của bạn
-                ECR_REGISTRY = "123456789012.dkr.ecr.ap-southeast-1.amazonaws.com"
-                IMAGE_NAME = "nnfs_webgame"
-            }
             steps {
                 script {
                     echo "Logging into ECR..."
-                    // Lệnh này dùng AWS CLI để login (yêu cầu máy chủ Jenkins đã cài AWS CLI)
                     sh "aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
-
-                    echo "Tagging and Pushing image..."
-                    sh """
-                    docker tag ${IMAGE_NAME}:${BUILD_ID} ${ECR_REGISTRY}/${IMAGE_NAME}:${BUILD_ID}
-                    docker tag ${IMAGE_NAME}:latest ${ECR_REGISTRY}/${IMAGE_NAME}:latest
                     
-                    docker push ${ECR_REGISTRY}/${IMAGE_NAME}:${BUILD_ID}
-                    docker push ${ECR_REGISTRY}/${IMAGE_NAME}:latest
-                    """
+                    echo "Pushing to ECR..."
+                    sh "docker push ${FULL_IMAGE}:${BUILD_ID}"
+                    sh "docker push ${FULL_IMAGE}:latest"
                 }
             }
         }
-
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    echo "Updating EKS..."
+                    // Dùng sed thay thế image trong file app.yaml của bạn
+                    sh "sed -i 's|image: .*|image: ${FULL_IMAGE}:${BUILD_ID}|g' cicd/k8s/app.yaml"
+                    sh "kubectl apply -f cicd/k8s/app.yaml --namespace=app"
+                }
+            }
+        }
     }
-
     post {
-
         always {
-
             echo "Cleaning Docker images..."
-
-            sh """
-            docker rmi ${IMAGE_NAME}:${BUILD_ID} || true
-            docker rmi ${IMAGE_NAME}:latest || true
-            """
-
+            sh "docker rmi ${FULL_IMAGE}:${BUILD_ID} || true"
+            sh "docker rmi ${FULL_IMAGE}:latest || true"
         }
-
-        success {
-
-            echo "Pipeline Success"
-
-        }
-
-        failure {
-
-            echo "Pipeline Failed"
-
-        }
-
     }
-
 }
