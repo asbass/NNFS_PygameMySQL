@@ -1,21 +1,12 @@
 pipeline {
     agent any
     
-    environment {
-        DOCKER_IMAGE = "taibaton/nnfs_pygamemysql"
-    }
-
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+                    // Dùng lệnh sh trực tiếp để build, an toàn hơn và không phụ thuộc vào plugin Docker
+                    sh "docker build -t nnfs-pygame-mysql:${env.BUILD_ID} ."
                 }
             }
         }
@@ -23,10 +14,10 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('', 'dockerhub-credentials-id') {
-                        dockerImage.push('latest')
-                        dockerImage.push("${env.BUILD_ID}")
-                    }
+                    // Cần chạy lệnh login trước (Lưu ý: Bạn nên lưu credentials trong Jenkins)
+                    // Hoặc đơn giản hơn là để lệnh docker login ở ngoài máy EC2
+                    sh "docker tag nnfs-pygame-mysql:${env.BUILD_ID} taibaton/nnfs-pygame-mysql:latest"
+                    sh "docker push taibaton/nnfs-pygame-mysql:latest"
                 }
             }
         }
