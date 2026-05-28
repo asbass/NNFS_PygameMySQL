@@ -16,8 +16,10 @@ pipeline {
                 script {
                     // Cần chạy lệnh login trước (Lưu ý: Bạn nên lưu credentials trong Jenkins)
                     // Hoặc đơn giản hơn là để lệnh docker login ở ngoài máy EC2
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-login', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     sh "docker tag nnfs-pygame-mysql:${env.BUILD_ID} taibaton/nnfs-pygame-mysql:latest"
                     sh "docker push taibaton/nnfs-pygame-mysql:latest"
+                }
                 }
             }
         }
