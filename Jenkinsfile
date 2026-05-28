@@ -5,7 +5,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t nnfs_pygamemysql:${env.BUILD_ID} ."
+                    echo "Building Docker image..."
+                    sh "docker build -t taibaton/nnfs_pygamemysql:${env.BUILD_ID} -t taibaton/nnfs_pygamemysql:latest ."
                 }
             }
         }
@@ -13,17 +14,31 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Dùng withCredentials để lấy user/pass từ Jenkins
                     withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        // BẮT BUỘC: Phải login trước khi push
+                        echo "Logging into Docker Hub..."
                         sh "echo $PASS | docker login -u $USER --password-stdin"
                         
-                        // Tag và Push
-                        sh "docker tag nnfs_pygamemysql:${env.BUILD_ID} taibaton/nnfs_pygamemysql:latest"
+                        echo "Pushing image to Docker Hub..."
+                        sh "docker push taibaton/nnfs_pygamemysql:${env.BUILD_ID}"
                         sh "docker push taibaton/nnfs_pygamemysql:latest"
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        always {
+            script {
+                echo "Cleaning up local images to save space..."
+                sh "docker rmi taibaton/nnfs_pygamemysql:${env.BUILD_ID} || true"
+            }
+        }
+        success {
+            echo "CI/CD Pipeline finished successfully!"
+        }
+        failure {
+            echo "CI/CD Pipeline failed. Please check the logs."
         }
     }
 }
