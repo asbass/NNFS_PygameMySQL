@@ -5,9 +5,9 @@ app = Flask(__name__)
 
 # MySQL Config
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
+    host=os.getenv("DB_HOST", "localhost"), # Lấy từ biến môi trường, mặc định là localhost
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASS", ""),
     database="gameboard"
 )
 
