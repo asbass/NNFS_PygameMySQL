@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         // Cấu hình duy nhất 1 lần
-        ECR_REGISTRY = "123456789012.dkr.ecr.ap-southeast-1.amazonaws.com"
+        ECR_REGISTRY = "891920435433.dkr.ecr.ap-southeast-1.amazonaws.com"
         IMAGE_NAME = "nnfs_webgame"
         FULL_IMAGE = "${ECR_REGISTRY}/${IMAGE_NAME}"
     }
