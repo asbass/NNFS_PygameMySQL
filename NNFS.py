@@ -5,10 +5,11 @@ import mysql.connector
 app = Flask(__name__)
 
 # MySQL Config - Lấy thông tin từ biến môi trường
+
 db = mysql.connector.connect(
-    host=os.getenv("DB_HOST", "localhost"),
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASS", ""),
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
     database="gameboard"
 )
 
