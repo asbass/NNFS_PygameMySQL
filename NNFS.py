@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS scores (
 )
 """)
 db.commit()
-
+@app.route("/health")
+def health():
+    return "OK", 200
 @app.route("/")
 def home():
     return render_template("index.html")
