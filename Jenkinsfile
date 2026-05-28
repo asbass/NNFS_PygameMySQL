@@ -1,44 +1,99 @@
 pipeline {
+
     agent any
-    
+
+    environment {
+
+        IMAGE_NAME = "taibaton/nnfs_webgame"
+
+    }
+
     stages {
+
         stage('Build Docker Image') {
+
             steps {
+
                 script {
+
                     echo "Building Docker image..."
-                    sh "docker build -t taibaton/nnfs_pygamemysql:${env.BUILD_ID} -t taibaton/nnfs_pygamemysql:latest ."
+
+                    sh """
+                    docker build \
+                    -t ${IMAGE_NAME}:${BUILD_ID} \
+                    -t ${IMAGE_NAME}:latest .
+                    """
+
                 }
+
             }
+
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Docker Image') {
+
             steps {
+
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        echo "Logging into Docker Hub..."
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
-                        
-                        echo "Pushing image to Docker Hub..."
-                        sh "docker push taibaton/nnfs_pygamemysql:${env.BUILD_ID}"
-                        sh "docker push taibaton/nnfs_pygamemysql:latest"
+
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'docker',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                        )
+                    ]) {
+
+                        echo "Login Docker Hub..."
+
+                        sh """
+                        echo \$DOCKER_PASS | docker login \
+                        -u \$DOCKER_USER \
+                        --password-stdin
+                        """
+
+                        echo "Push Docker images..."
+
+                        sh """
+                        docker push ${IMAGE_NAME}:${BUILD_ID}
+                        docker push ${IMAGE_NAME}:latest
+                        """
+
                     }
+
                 }
+
             }
+
         }
+
     }
-    
+
     post {
+
         always {
-            script {
-                echo "Cleaning up local images to save space..."
-                sh "docker rmi taibaton/nnfs_pygamemysql:${env.BUILD_ID} || true"
-            }
+
+            echo "Cleaning Docker images..."
+
+            sh """
+            docker rmi ${IMAGE_NAME}:${BUILD_ID} || true
+            docker rmi ${IMAGE_NAME}:latest || true
+            """
+
         }
+
         success {
-            echo "CI/CD Pipeline finished successfully!"
+
+            echo "Pipeline Success"
+
         }
+
         failure {
-            echo "CI/CD Pipeline failed. Please check the logs."
+
+            echo "Pipeline Failed"
+
         }
+
     }
+
 }
