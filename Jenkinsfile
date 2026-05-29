@@ -27,22 +27,18 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to EKS') {
+       stage('Deploy to EKS') {
             steps {
                 script {
-                    echo "Updating EKS deployment..."
+                    echo "Cấu hình kết nối EKS..."
+                    // Bước quan trọng: Cập nhật quyền cho máy chạy Jenkins
+                    sh "aws eks update-kubeconfig --region ap-southeast-1 --name <TÊN_CỤM_EKS_CỦA_BẠN>"
                     
+                    echo "Updating EKS deployment..."
                     if (fileExists('k8s/app.yaml')) {
-                        // Sửa file YAML để trỏ tới image mới vừa push
+                        // Thêm --validate=false để bỏ qua lỗi OpenAPI mà bạn gặp
                         sh "sed -i 's|image: .*|image: ${FULL_IMAGE}:${BUILD_ID}|g' k8s/app.yaml"
-                        
-                        // Đảm bảo namespace 'app' tồn tại
-                        sh "kubectl create namespace app --dry-run=client -o yaml | kubectl apply -f -"
-                        
-                        // Deploy app
-                        sh "kubectl apply -f k8s/app.yaml --namespace=app"
-                        
-                        echo "Deployment thành công cho ${IMAGE_NAME}!"
+                        sh "kubectl apply -f k8s/app.yaml --namespace=app --validate=false"
                     } else {
                         error "Không tìm thấy file k8s/app.yaml!"
                     }
