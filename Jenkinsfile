@@ -32,7 +32,7 @@ pipeline {
                 script {
                     echo "Updating EKS deployment..."
                     
-                    if (fileExists('NNFS_PygameMySQL/k8s/app.yaml')) {
+                    if (fileExists('k8/app.yaml')) {
                         // Sửa file YAML để trỏ tới image mới vừa push
                         sh "sed -i 's|image: .*|image: ${FULL_IMAGE}:${BUILD_ID}|g' k8s/app.yaml"
                         
@@ -40,11 +40,11 @@ pipeline {
                         sh "kubectl create namespace app --dry-run=client -o yaml | kubectl apply -f -"
                         
                         // Deploy app
-                        sh "kubectl apply -f NNFS_PygameMySQL/k8s/app.yaml --namespace=app"
+                        sh "kubectl apply -f k8/app.yaml --namespace=app"
                         
                         echo "Deployment thành công cho ${IMAGE_NAME}!"
                     } else {
-                        error "Không tìm thấy file NNFS_PygameMySQL/k8s/app.yaml!"
+                        error "Không tìm thấy file k8/app.yaml!"
                     }
                 }
             }
