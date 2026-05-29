@@ -32,7 +32,7 @@ pipeline {
                 script {
                     echo "Cấu hình kết nối EKS..."
                     // Bước quan trọng: Cập nhật quyền cho máy chạy Jenkins
-                    sh "aws eks update-kubeconfig --region ap-southeast-1 --name DE00175-eks
+                    sh "aws eks update-kubeconfig --region ap-southeast-1 --name DE00175-eks"
                     
                     echo "Updating EKS deployment..."
                     if (fileExists('k8s/app.yaml')) {
