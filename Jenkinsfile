@@ -3,7 +3,7 @@ pipeline {
     environment {
         // Tên repo khớp với repo bạn tạo trên AWS ECR
         ECR_REGISTRY = "891920435433.dkr.ecr.ap-southeast-1.amazonaws.com"
-        IMAGE_NAME = "nnfs_pygame_mysql" 
+        IMAGE_NAME = "de00175-app" 
         FULL_IMAGE = "${ECR_REGISTRY}/${IMAGE_NAME}"
     }
     stages {
