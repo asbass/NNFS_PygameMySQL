@@ -15,7 +15,27 @@ pipeline {
                 }
             }
         }
+        // stage('Push to ECR') {
 
+        //     steps {
+
+        //         script {
+
+        //             echo "Logging into ECR..."
+
+        //             sh "aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+
+                    
+
+        //             echo "Pushing images to ECR..."
+
+        //             sh "docker push ${FULL_IMAGE}:${BUILD_ID}"
+
+        //             sh "docker push ${FULL_IMAGE}:latest"
+
+        //         }
+
+        //     }
         stage('Push to ECR and Docker Hub') {
             steps {
                 script {
