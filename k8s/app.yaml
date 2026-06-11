@@ -22,7 +22,7 @@ type: Opaque
 
 stringData:
 
-  DB_HOST: terraform-20260528155106360600000006.chom4aao050k.ap-southeast-1.rds.amazonaws.com
+  DB_HOST: REPLACE_WITH_RDS_ENDPOINT
 
   DB_NAME: gameboard
 
