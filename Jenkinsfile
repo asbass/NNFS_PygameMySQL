@@ -15,45 +15,45 @@ pipeline {
                 }
             }
         }
-        // stage('Push to ECR') {
+        stage('Push to ECR') {
 
-        //     steps {
-
-        //         script {
-
-        //             echo "Logging into ECR..."
-
-        //             sh "aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
-
-                    
-
-        //             echo "Pushing images to ECR..."
-
-        //             sh "docker push ${FULL_IMAGE}:${BUILD_ID}"
-
-        //             sh "docker push ${FULL_IMAGE}:latest"
-
-        //         }
-
-        //     }
-        stage('Push to ECR and Docker Hub') {
             steps {
+
                 script {
-                    // 1. Login ECR
+
+                    echo "Logging into ECR..."
+
                     sh "aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+
                     
-                    // 2. Login Docker Hub 
-                    sh "echo '${DOCKERHUB_PASSWORD}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin"
-                    
-                    // 3. Push lên ECR
+
+                    echo "Pushing images to ECR..."
+
                     sh "docker push ${FULL_IMAGE}:${BUILD_ID}"
-                    
-                    // 4. Push lên Docker Hub (Tên repo trên Docker Hub của bạn là taibaton/nnfs_webgame)
-                    sh "docker tag ${FULL_IMAGE}:${BUILD_ID} taibaton/nnfs_webgame:${BUILD_ID}"
-                    sh "docker push taibaton/nnfs_webgame:${BUILD_ID}"
+
+                    sh "docker push ${FULL_IMAGE}:latest"
+
                 }
+
             }
-        }
+        // stage('Push to ECR and Docker Hub') {
+        //     steps {
+        //         script {
+        //             // 1. Login ECR
+        //             sh "aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    
+        //             // 2. Login Docker Hub 
+        //             sh "echo '${DOCKERHUB_PASSWORD}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin"
+                    
+        //             // 3. Push lên ECR
+        //             sh "docker push ${FULL_IMAGE}:${BUILD_ID}"
+                    
+        //             // 4. Push lên Docker Hub (Tên repo trên Docker Hub của bạn là taibaton/nnfs_webgame)
+        //             sh "docker tag ${FULL_IMAGE}:${BUILD_ID} taibaton/nnfs_webgame:${BUILD_ID}"
+        //             sh "docker push taibaton/nnfs_webgame:${BUILD_ID}"
+        //         }
+        //     }
+        // }
        stage('Deploy to EKS') {
             steps {
                 script {
