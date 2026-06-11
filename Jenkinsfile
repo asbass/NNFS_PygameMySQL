@@ -36,6 +36,7 @@ pipeline {
                 }
 
             }
+        }
         // stage('Push to ECR and Docker Hub') {
         //     steps {
         //         script {
