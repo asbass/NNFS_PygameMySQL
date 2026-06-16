@@ -11,8 +11,7 @@ db = mysql.connector.connect(
     user=os.getenv("DB_USER"),
     password=os.getenv("DB_PASSWORD"),
     database=os.getenv("DB_NAME"),
-    ssl_ca='/app/global-bundle.pem',
-    ssl_verify_identity=True
+    ssl_disabled=True
 )
 
 cursor = db.cursor()
