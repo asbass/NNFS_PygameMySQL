@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, jsonify
 import mysql.connector
-
+import sys
 app = Flask(__name__)
 
 # Hàm tạo kết nối Database (đảm bảo mỗi lần gọi là một kết nối tươi mới)
