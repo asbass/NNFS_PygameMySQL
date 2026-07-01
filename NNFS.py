@@ -1,4 +1,6 @@
 import os
+import traceback 
+import logging
 from flask import Flask, render_template, request, jsonify
 import mysql.connector
 import sys
