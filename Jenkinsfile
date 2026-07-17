@@ -6,6 +6,42 @@ pipeline {
         IMAGE_NAME = "de00175-app" 
         FULL_IMAGE = "${ECR_REGISTRY}/${IMAGE_NAME}"
     }
+    stage('Trivy Security Scan') {
+    steps {
+        script {
+            echo "Scanning Docker image with Trivy..."
+
+            sh """
+            trivy image \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            ${FULL_IMAGE}:${BUILD_ID}
+            """
+            }
+        }
+    }        
+    stage('Verify Rollout') {
+    steps {
+        script {
+            try {
+                sh """
+                kubectl rollout status deployment/de00175-app \
+                -n app \
+                --timeout=180s
+                """
+            } catch(Exception e) {
+
+                echo "Rollback..."
+
+                sh """
+                kubectl rollout undo deployment/de00175-app -n app
+                """
+
+                throw e
+                }
+            }
+        }
+    }
     stages {
         stage('Build Docker Image') {
             steps {
